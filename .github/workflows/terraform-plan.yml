@@ -9,6 +9,10 @@ on:
     branches:
       - feature/initial_infra
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform-plan:
     name: Terraform Plan
@@ -24,13 +28,24 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check Azure Login
+        run: az account show
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
         run: terraform plan -input=false
-
