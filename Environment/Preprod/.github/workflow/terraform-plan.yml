@@ -1,0 +1,94 @@
+trigger:
+  branches:
+    include:
+      - feature/initial_infra
+
+pr:
+  branches:
+    include:
+      - feature/initial_infra
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  terraformVersion: '1.13.3'
+  terraformWorkingDirectory: 'Environment/Preprod'
+
+steps:
+
+# ---------------------------------------------------
+# 1. Install Terraform
+# ---------------------------------------------------
+- task: TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: '$(terraformVersion)'
+
+
+# ---------------------------------------------------
+# 2. Terraform Init
+# ---------------------------------------------------
+- task: AzureCLI@2
+  displayName: 'Terraform Init'
+  inputs:
+    azureSubscription: 'YOUR-AZURE-SERVICE-CONNECTION'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    workingDirectory: '$(terraformWorkingDirectory)'
+    inlineScript: |
+      echo "Initializing Terraform..."
+
+      terraform init
+
+      echo "Terraform initialization completed."
+
+
+# ---------------------------------------------------
+# 3. Terraform Validate
+# ---------------------------------------------------
+- task: AzureCLI@2
+  displayName: 'Terraform Validate'
+  inputs:
+    azureSubscription: 'YOUR-AZURE-SERVICE-CONNECTION'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    workingDirectory: '$(terraformWorkingDirectory)'
+    inlineScript: |
+      echo "Validating Terraform configuration..."
+
+      terraform validate
+
+      echo "Terraform validation completed."
+
+
+# ---------------------------------------------------
+# 4. Terraform Plan
+# ---------------------------------------------------
+- task: AzureCLI@2
+  displayName: 'Terraform Plan'
+  inputs:
+    azureSubscription: 'YOUR-AZURE-SERVICE-CONNECTION'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    workingDirectory: '$(terraformWorkingDirectory)'
+    inlineScript: |
+      echo "Running Terraform Plan..."
+
+      terraform plan \
+        -input=false \
+        -out=tfplan
+
+      echo "Terraform plan completed successfully."
+
+
+# ---------------------------------------------------
+# 5. Publish Terraform Plan
+# ---------------------------------------------------
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Terraform Plan'
+  inputs:
+    targetPath: '$(terraformWorkingDirectory)/tfplan'
+    artifact: 'terraform-plan'
+    publishLocation: 'pipeline'
+
