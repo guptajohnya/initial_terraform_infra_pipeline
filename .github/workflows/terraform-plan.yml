@@ -34,9 +34,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: 3a552b37-d4ec-4390-aea7-0599beac1a8b
-          tenant-id: 4484e5b8-c184-4c3c-8f23-4b3cb0236e76
-          subscription-id: 00435966-ecad-4915-abba-fb27e9d97e04
+          client-id: 5cb9ef1a-b147-469b-891a-3e22d411dcd7
+          tenant-id: 6fe55cd5-23f3-4d17-b1ba-ed059ca96c26
+          subscription-id: d69ba375-dd4b-4f23-9b02-2d4aaf0f4f7e
 
       - name: Check Azure Login
         run: az account show
