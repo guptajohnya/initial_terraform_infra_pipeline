@@ -7,7 +7,7 @@ rgs = {
 
 sas = {
   sa1 = {
-    name                     = "sa1012unique"
+    name                     = "rg1sa1012unique"
     resource_group_name      = "rg1"
     location                 = "central India"
     account_tier             = "Standard"
