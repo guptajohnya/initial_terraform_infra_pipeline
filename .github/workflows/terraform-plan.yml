@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Terraform Apply
 
 on:
   workflow_dispatch:
@@ -7,33 +7,33 @@ permissions:
   id-token: write
   contents: read
 
-jobs:
-  terraform-plan:
-    name: Terraform Plan
-    runs-on: ubuntu-latest
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_USE_OIDC: true
+  TF_WORKING_DIR: ./environment/preprod
 
+jobs:
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Environment/Preprod
-
+        working-directory: ${{ env.TF_WORKING_DIR }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.13.3
 
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: 5cb9ef1a-b147-469b-891a-3e22d411dcd7
-          tenant-id: 6fe55cd5-23f3-4d17-b1ba-ed059ca96c26
-          subscription-id: d69ba375-ddb4-4f23-9b02-2d4aa0f4f7e
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-      - name: Check Azure Login
-        run: az account show
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         run: terraform init -input=false
@@ -42,4 +42,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false
+        run: terraform plan -input=false -var-file=terraform.tfvars -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
